@@ -104,6 +104,25 @@ void ofxMapaMok::update(){
 
 // ------------------------------------------- RENDER
 
+void ofxMapaMok::begin()
+{
+    glPushMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    
+    intrinsics.loadProjectionMatrix(10, 2000);
+    ofxCv::applyMatrix(modelMatrix);
+}
+
+void ofxMapaMok::end()
+{
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+}
+
 void ofxMapaMok::draw(ofTexture *_texture){
 
     if (_texture != NULL)
@@ -191,24 +210,15 @@ void ofxMapaMok::draw(ofTexture *_texture){
 	} else {
 		
         if ( calibrationReady ) {
-            glPushMatrix();
-            glMatrixMode(GL_PROJECTION);
-            glPushMatrix();
-            glMatrixMode(GL_MODELVIEW);
             
+            begin();
             
-            intrinsics.loadProjectionMatrix(10, 2000);
-            ofxCv::applyMatrix(modelMatrix);
             render(_texture);
             if(setupMode) {
                 imageMesh = getProjectedMesh(objectMesh);
             }
             
-            
-            glPopMatrix();
-            glMatrixMode(GL_PROJECTION);
-            glPopMatrix();
-            glMatrixMode(GL_MODELVIEW);
+            end();
             
         } else {
             

@@ -62,6 +62,9 @@ public:
     void update();
     
     void draw(ofTexture *_texture = NULL);
+    
+    void begin();
+    void end();
 	
     //  Properties
     //
