@@ -41,6 +41,8 @@ ofxMapaMok::ofxMapaMok(){
     init(0,0,ofGetScreenWidth(),ofGetScreenHeight());
     objName = "mapamok";
     bEditMode = false;
+    
+    cam.setTranslationKey('t');
 }
 
 //  ------------------------------------------ MAIN LOOP
@@ -211,7 +213,7 @@ void ofxMapaMok::draw(ofTexture *_texture){
 		
         if ( calibrationReady ) {
             
-            begin();
+            begin(100, 10000);
             
             render(_texture);
             if(setupMode) {
