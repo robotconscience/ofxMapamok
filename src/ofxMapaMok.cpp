@@ -540,7 +540,10 @@ bool ofxMapaMok::loadMesh(string _daeModel, int _textWidth, int _textHeight){
         }
         
         loadCalibration(modelFile);
+
+		return true;
     }
+	return false;
 }
 
 bool ofxMapaMok::loadCalibration(string _xmlfile) {
@@ -564,11 +567,12 @@ bool ofxMapaMok::loadCalibration(string _xmlfile) {
                 }
                 XML.popTag();
             }
+			return true;
         }
         
         XML.popTag();
     }
-    
+    return false;
 }
 
 bool ofxMapaMok::saveCalibration(string _xmlfile) {
