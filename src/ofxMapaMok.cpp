@@ -112,8 +112,8 @@ void ofxMapaMok::begin(float near, float far)
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glMatrixMode(GL_MODELVIEW);
-    
-    intrinsics.loadProjectionMatrix(near, far);
+	
+	intrinsics.loadProjectionMatrix(near, far);
     ofxCv::applyMatrix(modelMatrix);
 }
 
