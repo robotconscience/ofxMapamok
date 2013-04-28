@@ -62,6 +62,9 @@ public:
     void update();
     
     void draw(ofTexture *_texture = NULL);
+    
+    void begin(float near = 10.f, float far = 2000.f);
+    void end();
 	
     //  Properties
     //

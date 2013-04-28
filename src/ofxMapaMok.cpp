@@ -41,6 +41,8 @@ ofxMapaMok::ofxMapaMok(){
     init(0,0,ofGetScreenWidth(),ofGetScreenHeight());
     objName = "mapamok";
     bEditMode = false;
+    
+    cam.setTranslationKey('t');
 }
 
 //  ------------------------------------------ MAIN LOOP
@@ -103,6 +105,25 @@ void ofxMapaMok::update(){
 }
 
 // ------------------------------------------- RENDER
+
+void ofxMapaMok::begin(float near, float far)
+{
+    glPushMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    
+    intrinsics.loadProjectionMatrix(near, far);
+    ofxCv::applyMatrix(modelMatrix);
+}
+
+void ofxMapaMok::end()
+{
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+}
 
 void ofxMapaMok::draw(ofTexture *_texture){
 
@@ -191,24 +212,15 @@ void ofxMapaMok::draw(ofTexture *_texture){
 	} else {
 		
         if ( calibrationReady ) {
-            glPushMatrix();
-            glMatrixMode(GL_PROJECTION);
-            glPushMatrix();
-            glMatrixMode(GL_MODELVIEW);
             
+            begin(100, 10000);
             
-            intrinsics.loadProjectionMatrix(10, 2000);
-            ofxCv::applyMatrix(modelMatrix);
             render(_texture);
             if(setupMode) {
                 imageMesh = getProjectedMesh(objectMesh);
             }
             
-            
-            glPopMatrix();
-            glMatrixMode(GL_PROJECTION);
-            glPopMatrix();
-            glMatrixMode(GL_MODELVIEW);
+            end();
             
         } else {
             
