@@ -189,15 +189,22 @@ void ofxMapaMok::draw(ofTexture *_texture){
             //
             int choice;
             float distance;
-            ofVec3f selected = getClosestPointOnMesh(imageMesh, ofGetAppPtr()->mouseX, ofGetAppPtr()->mouseY, &choice, &distance);
-            if(!ofGetMousePressed() && distance < selectionRadius) {
-                hoverChoice = choice;
-                hoverSelected = true;
-                drawLabeledPoint(choice, selected, ofxCv::magentaPrint);
-            } else {
-                hoverSelected = false;
-            }
-            
+			if (imageMesh.getNumVertices())
+            {
+				ofVec3f selected = getClosestPointOnMesh(imageMesh, ofGetAppPtr()->mouseX, ofGetAppPtr()->mouseY, &choice, &distance);
+				if(!ofGetMousePressed() && distance < selectionRadius) {
+					hoverChoice = choice;
+					hoverSelected = true;
+					drawLabeledPoint(choice, selected, ofxCv::magentaPrint);
+				} else {
+					hoverSelected = false;
+				}
+			}
+			else
+			{
+				hoverSelected = false;
+				ofLogError() << "Mesh is empty";
+			}
             //  Draw selected point yellow
             //
             if( selectedVert ) {
@@ -438,6 +445,9 @@ void ofxMapaMok::_keyPressed(ofKeyEventArgs &e){
         } else {
             arrowing = false;
         }
+
+		if (e.key == 'q') cam.move(0, 0, -5);
+		else if (e.key == 'a') cam.move(0, 0, 5);
         
         //  Delete Selected
         //
