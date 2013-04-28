@@ -106,7 +106,7 @@ void ofxMapaMok::update(){
 
 // ------------------------------------------- RENDER
 
-void ofxMapaMok::begin(float near, float far)
+void ofxMapaMok::begin(float nearClip, float farClip)
 {
     glPushMatrix();
     glMatrixMode(GL_PROJECTION);
@@ -114,7 +114,7 @@ void ofxMapaMok::begin(float near, float far)
     glMatrixMode(GL_MODELVIEW);
 	
 	intrinsics.loadProjectionMatrix(near, far);
-    ofxCv::applyMatrix(modelMatrix);
+	ofxCv::applyMatrix(modelMatrix);
 }
 
 void ofxMapaMok::end()

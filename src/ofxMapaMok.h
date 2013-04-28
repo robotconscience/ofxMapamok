@@ -63,7 +63,7 @@ public:
     
     void draw(ofTexture *_texture = NULL);
     
-    void begin(float near = 10.f, float far = 2000.f);
+    void begin(float nearClip = 10.f, float farClip = 2000.f);
     void end();
 	
     //  Properties
