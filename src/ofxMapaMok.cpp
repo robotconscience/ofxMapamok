@@ -110,9 +110,13 @@ void ofxMapaMok::begin(float near, float far)
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glMatrixMode(GL_MODELVIEW);
-    
-    intrinsics.loadProjectionMatrix(near, far);
-    ofxCv::applyMatrix(modelMatrix);
+   
+    if (!intrinsics.getCameraMatrix().empty())
+    {
+        intrinsics.loadProjectionMatrix(near, far);
+        ofxCv::applyMatrix(modelMatrix);
+    }
+    else ofLogError() << "Cam matrix empty";
 }
 
 void ofxMapaMok::end()
@@ -356,8 +360,8 @@ void ofxMapaMok::render(ofTexture *_texture){
 			if(shader != NULL)
                 shader->begin();
             
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_BACK);
+			//glEnable(GL_CULL_FACE);
+			//glCullFace(GL_BACK);
             
             if (_texture != NULL)
                 _texture->bind();
