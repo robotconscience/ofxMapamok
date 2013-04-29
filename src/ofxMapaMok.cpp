@@ -41,6 +41,8 @@ ofxMapaMok::ofxMapaMok(){
     init(0,0,ofGetScreenWidth(),ofGetScreenHeight());
     objName = "mapamok";
     bEditMode = false;
+    
+    cam.setTranslationKey('t');
 }
 
 //  ------------------------------------------ MAIN LOOP
@@ -104,7 +106,7 @@ void ofxMapaMok::update(){
 
 // ------------------------------------------- RENDER
 
-void ofxMapaMok::begin(float near, float far)
+void ofxMapaMok::begin(float nearClip, float farClip)
 {
     glPushMatrix();
     glMatrixMode(GL_PROJECTION);
@@ -113,7 +115,7 @@ void ofxMapaMok::begin(float near, float far)
    
     if (!intrinsics.getCameraMatrix().empty())
     {
-        intrinsics.loadProjectionMatrix(near, far);
+        intrinsics.loadProjectionMatrix(nearClip, farClip);
         ofxCv::applyMatrix(modelMatrix);
     }
     else ofLogError() << "Cam matrix empty";
@@ -191,15 +193,22 @@ void ofxMapaMok::draw(ofTexture *_texture){
             //
             int choice;
             float distance;
-            ofVec3f selected = getClosestPointOnMesh(imageMesh, ofGetAppPtr()->mouseX, ofGetAppPtr()->mouseY, &choice, &distance);
-            if(!ofGetMousePressed() && distance < selectionRadius) {
-                hoverChoice = choice;
-                hoverSelected = true;
-                drawLabeledPoint(choice, selected, ofxCv::magentaPrint);
-            } else {
-                hoverSelected = false;
-            }
-            
+			if (imageMesh.getNumVertices())
+            {
+				ofVec3f selected = getClosestPointOnMesh(imageMesh, ofGetAppPtr()->mouseX, ofGetAppPtr()->mouseY, &choice, &distance);
+				if(!ofGetMousePressed() && distance < selectionRadius) {
+					hoverChoice = choice;
+					hoverSelected = true;
+					drawLabeledPoint(choice, selected, ofxCv::magentaPrint);
+				} else {
+					hoverSelected = false;
+				}
+			}
+			else
+			{
+				hoverSelected = false;
+				ofLogError() << "Mesh is empty";
+			}
             //  Draw selected point yellow
             //
             if( selectedVert ) {
@@ -215,7 +224,7 @@ void ofxMapaMok::draw(ofTexture *_texture){
 		
         if ( calibrationReady ) {
             
-            begin();
+            begin(100, 10000);
             
             render(_texture);
             if(setupMode) {
@@ -440,6 +449,9 @@ void ofxMapaMok::_keyPressed(ofKeyEventArgs &e){
         } else {
             arrowing = false;
         }
+
+		if (e.key == 'q') cam.move(0, 0, -5);
+		else if (e.key == 'a') cam.move(0, 0, 5);
         
         //  Delete Selected
         //
@@ -554,7 +566,10 @@ bool ofxMapaMok::loadMesh(string _daeModel, int _textWidth, int _textHeight){
         }
         
         loadCalibration(modelFile);
+
+		return true;
     }
+	return false;
 }
 
 bool ofxMapaMok::loadCalibration(string _xmlfile) {
@@ -578,11 +593,12 @@ bool ofxMapaMok::loadCalibration(string _xmlfile) {
                 }
                 XML.popTag();
             }
+			return true;
         }
         
         XML.popTag();
     }
-    
+    return false;
 }
 
 bool ofxMapaMok::saveCalibration(string _xmlfile) {
