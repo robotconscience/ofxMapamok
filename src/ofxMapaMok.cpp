@@ -596,7 +596,7 @@ bool ofxMapaMok::saveCalibration(string _xmlfile) {
     //  Guardamos a nuestro estilo la calibración
     //
     ofxXmlSettings XML;
-    if (XML.loadFile(_xmlfile)){
+    //if (XML.loadFile(_xmlfile)){
         
         if (!XML.tagExists("MAPAMOK")){
             XML.addTag("MAPAMOK");
@@ -628,8 +628,8 @@ bool ofxMapaMok::saveCalibration(string _xmlfile) {
         
         XML.popTag();
         
-        fileSaved = XML.saveFile(modelFile);
-    }
+        fileSaved = XML.saveFile(_xmlfile);
+    //}
     
     return fileSaved;
 }
