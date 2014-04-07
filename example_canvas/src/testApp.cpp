@@ -6,8 +6,8 @@ void testApp::setup(){
     ofEnableAlphaBlending();
     ofBackground(0, 0, 0);
     
-    textWidth = 800;
-    textHeight = 600;
+    textWidth = 1024;
+    textHeight = 1024;
     
     
     //  Load two MapaMoks
@@ -25,7 +25,7 @@ void testApp::setup(){
     
     //  Init WebCam texture
     //
-    video.initGrabber(640,480);
+    video.initGrabber(1024,1024);
     videoViewPort.loadSettings("video.xml");
     
     bCanvasMode = false;
