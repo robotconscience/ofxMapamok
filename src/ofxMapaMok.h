@@ -85,6 +85,9 @@ public:
                 screenPointSize,
                 selectedPointSize;
     
+    float       near,
+                far;
+    
     bool        useLights;
 	
 private:

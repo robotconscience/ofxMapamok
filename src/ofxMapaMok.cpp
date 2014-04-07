@@ -25,6 +25,9 @@ ofxMapaMok::ofxMapaMok(){
     slowLerpRate = .001;
     fastLerpRate = 1.;
     
+    near = 100.0;
+    far = 10000;
+    
     
     //  Private Defaul Properties ( the user don't need to have acces to them )
     //
@@ -57,7 +60,7 @@ void ofxMapaMok::update(){
 		
         //  Generate camera matrix given aov guess
         //
-        cv::Size2i imageSize(ofGetWidth(), ofGetHeight());
+        cv::Size2i imageSize(width, height);
         
         float f = imageSize.width * ofDegToRad(aov); // i think this is wrong, but it's optimized out anyway
         cv::Point2f c = cv::Point2f(imageSize) * (1. / 2);
@@ -224,7 +227,7 @@ void ofxMapaMok::draw(ofTexture *_texture){
 		
         if ( calibrationReady ) {
             
-            begin(100, 10000);
+            begin(near, far);
             
             render(_texture);
             if(setupMode) {
@@ -440,10 +443,10 @@ void ofxMapaMok::_keyPressed(ofKeyEventArgs &e){
             if(choice > 0){
                 cv::Point2f& cur = imagePoints[choice];
                 switch(e.key) {
-                    case OF_KEY_LEFT: cur.x -= 1; break;
-                    case OF_KEY_RIGHT: cur.x += 1; break;
-                    case OF_KEY_UP: cur.y -= 1; break;
-                    case OF_KEY_DOWN: cur.y += 1; break;
+                    case OF_KEY_LEFT: cur.x -= ofGetKeyPressed( OF_KEY_SHIFT) ? 10 : 1; break;
+                    case OF_KEY_RIGHT: cur.x += ofGetKeyPressed( OF_KEY_SHIFT) ? 10 : 1; break;
+                    case OF_KEY_UP: cur.y -= ofGetKeyPressed( OF_KEY_SHIFT) ? 10 : 1; break;
+                    case OF_KEY_DOWN: cur.y += ofGetKeyPressed( OF_KEY_SHIFT) ? 10 : 1; break;
                 }
             }
         } else {
@@ -531,32 +534,34 @@ bool ofxMapaMok::loadMesh(string _daeModel, int _textWidth, int _textHeight){
         
         fileLoaded = true;
         
-        //  Guardamos el nombre para después poder guardar los puntos calibrados como un XML
+        //  store model name, will be used later to save xml settings
         //
         modelFile = _daeModel;
         
         objectMesh = model.getMesh(0);
         
-        //  Checkeamos si la cantidad de vértices coincide con las coordenadas de textura
+        //  Check to see if vertices match texture coordinates
         //
         int n = objectMesh.getNumVertices();
         if ( n != objectMesh.getNumTexCoords() ){
-            cout << "ERROR: not same amount of texCoords for all vertices" << endl;
+            ofLogError() << "[ofxMapamok]: not same amount of texCoords for all vertices";
         }
         
-        //  Ajustamos los coordenadas que estan normalizadas por el tamaño de la textura
-        //
+        //  Hm: this checks for normalized texcoords. Maybe if non pow2 don't multiply??
+        bool bNormalized = true;
         for(int i = 0; i < n; i++){
             float x = objectMesh.getTexCoords()[i].x;
             float y = objectMesh.getTexCoords()[i].y;
             
-            if ( (x > 1) || (y > 1) || (x < -1) || (y < -1))
-                ofLog(OF_LOG_WARNING,"TexCoord " + ofToString(i) + " it's out of normalized values");
+            if ( (x > 1) || (y > 1) || (x < -1) || (y < -1)){
+                ofLog(OF_LOG_ERROR,"TexCoord " + ofToString(i) + " it's out of normalized values");
+                bNormalized = false;
+            }
             
-            objectMesh.getTexCoords()[i] = ofVec2f( x*textWidth, y*textHeight);
+            objectMesh.getTexCoords()[i] = ofVec2f( bNormalized ? x*textWidth : x, bNormalized ? y*textHeight : y);
         }
         
-        //  Creamos y asignamos los valores a los vectores contienen los puntos del modelo y los projectados
+        //  Create & assign values to vectors based on model's points
         //
         objectPoints.resize(n);
         imagePoints.resize(n);
@@ -565,7 +570,7 @@ bool ofxMapaMok::loadMesh(string _daeModel, int _textWidth, int _textHeight){
             objectPoints[i] = ofxCv::toCv(objectMesh.getVertex(i));
         }
         
-        loadCalibration(modelFile);
+        loadCalibration( modelFile.substr( 0, modelFile.length() - 4) + ".xml");
 
 		return true;
     }
@@ -573,7 +578,6 @@ bool ofxMapaMok::loadMesh(string _daeModel, int _textWidth, int _textHeight){
 }
 
 bool ofxMapaMok::loadCalibration(string _xmlfile) {
-    
     //  Vemos si ya posee una calibración previamente realizada guardada dentro del dae
     //
     ofxXmlSettings XML;
@@ -593,6 +597,8 @@ bool ofxMapaMok::loadCalibration(string _xmlfile) {
                 }
                 XML.popTag();
             }
+            ofLogVerbose()<<"[ofxMapamok] Setup succeeded, entering render mode";
+            setupMode = SETUP_NONE;
 			return true;
         }
         
@@ -607,7 +613,7 @@ bool ofxMapaMok::saveCalibration(string _xmlfile) {
     //  Si no se le pasa un .xml guarda la calibración dentro del .dae
     //
     if (_xmlfile == "none")
-        _xmlfile = modelFile;
+        _xmlfile = modelFile.substr( 0, modelFile.length() - 4) + ".xml";
     
     //  Guardamos a nuestro estilo la calibración
     //
