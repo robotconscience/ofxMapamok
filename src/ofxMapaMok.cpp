@@ -538,7 +538,12 @@ bool ofxMapaMok::loadMesh(string _daeModel, int _textWidth, int _textHeight){
         //
         modelFile = _daeModel;
         
-        objectMesh = model.getMesh(0);
+        //objectMesh = model.getMesh( model.getNumMeshes() - 1 );
+        
+        for (int i=model.getNumMeshes()-1; i>=0; i--){
+            ofMesh m = model.getMesh(i);
+            objectMesh.append( m );
+        }
         
         //  Check to see if vertices match texture coordinates
         //
@@ -549,16 +554,21 @@ bool ofxMapaMok::loadMesh(string _daeModel, int _textWidth, int _textHeight){
         
         //  Hm: this checks for normalized texcoords. Maybe if non pow2 don't multiply??
         bool bNormalized = true;
-        for(int i = 0; i < n; i++){
-            float x = objectMesh.getTexCoords()[i].x;
-            float y = objectMesh.getTexCoords()[i].y;
-            
-            if ( (x > 1) || (y > 1) || (x < -1) || (y < -1)){
-                ofLog(OF_LOG_ERROR,"TexCoord " + ofToString(i) + " it's out of normalized values");
-                bNormalized = false;
+        for(int i = 0; i < objectMesh.getNumVertices(); i++){
+            if ( objectMesh.getNumTexCoords() > i ){
+                float x = objectMesh.getTexCoords()[i].x;
+                float y = objectMesh.getTexCoords()[i].y;
+                
+                if ( (x > 1) || (y > 1) || (x < -1) || (y < -1)){
+                    ofLog(OF_LOG_ERROR,"TexCoord " + ofToString(i) + " it's out of normalized values");
+                    ofLogError()<<x<<":"<<y<<endl;
+                    //bNormalized = false;
+                }
+                
+                objectMesh.getTexCoords()[i] = ofVec2f( bNormalized ? x*textWidth : x, bNormalized ? y*textHeight : y);
+            } else {
+                objectMesh.addTexCoord(ofVec2f(0,0));
             }
-            
-            objectMesh.getTexCoords()[i] = ofVec2f( bNormalized ? x*textWidth : x, bNormalized ? y*textHeight : y);
         }
         
         //  Create & assign values to vectors based on model's points
